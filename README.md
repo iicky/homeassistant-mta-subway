@@ -4,6 +4,8 @@
 
 A sensor to provide MTA Subway service statuses for Home Assistant. The sensor reads from the offical [MTA Service Status](http://web.mta.info/status/ServiceStatusSubway.xml) XML feed and provides both the overall line status as a sensor state as well as status descriptions as sensor attributes. The train line states are updated every minute from the MTA feed.
 
+Credit for the line icons goes to [louh](https://github.com/louh) for his great [NYC Subway Icons repo](https://github.com/louh/nyc-subway-icons).
+
 ### Sensor States
 - Good Service
 - Delays
