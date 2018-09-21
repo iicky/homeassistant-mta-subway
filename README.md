@@ -12,7 +12,7 @@ Credit for the line icons goes to [louh](https://github.com/louh) for his great 
 - Planned Work
 - Service Change
 
-<center>![Example subway card in Home Assistant](https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Subway%20Group%20Screen%20Shot.png)</center>
+![Example subway card in Home Assistant](https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Subway%20Group%20Screen%20Shot.png)
 
 ### Sensor Attributes
 
@@ -32,7 +32,7 @@ A full description of the changes to the line service.
 A full description of any planned work currently occuring on the line.
 
 <br>
-<center>![Example sensor state and attributes in Home Assistant](https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Sensor%20States%20Screen%20Shot.png)</center>
+![Example sensor state and attributes in Home Assistant](https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Sensor%20States%20Screen%20Shot.png)
 
 ## Installation
 
