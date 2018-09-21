@@ -33,6 +33,7 @@ A full description of the changes to the line service.
 **Planned Work Description**<br>
 A full description of any planned work currently occuring on the line.
 
+<br>
 <p align="center">
   <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Sensor%20States%20Screen%20Shot.png" alt="Example sensor state and attributes in Home Assistant">
 </p>
