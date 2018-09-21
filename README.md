@@ -10,7 +10,7 @@ A sensor to provide MTA Subway service statuses for Home Assistant. The sensor r
 - Planned Work
 - Service Change
 
-![](images/Subway Group Screen Shot.png)
+![](iicky.github.com/homeassistant-mta-subway/images/Subway Group Screen Shot.png)
 
 ### Sensor Attributes
 
@@ -29,7 +29,7 @@ A full description of the changes to the line service.
 **Planned Work Description**
 A full description of any planned work currently occuring on the line.
 
-![](images/Sensor States Screen Shot.png)
+![](iicky.github.com/homeassistant-mta-subway/images/Sensor States Screen Shot.png)
 
 ## Installation
 
