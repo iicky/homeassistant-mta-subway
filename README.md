@@ -10,26 +10,26 @@ A sensor to provide MTA Subway service statuses for Home Assistant. The sensor r
 - Planned Work
 - Service Change
 
-![](iicky.github.com/homeassistant-mta-subway/images/Subway Group Screen Shot.png)
+![](images/Subway Group Screen Shot.png?raw=true)
 
 ### Sensor Attributes
 
-**Direction 0 State**
+**Direction 0 State**<br>
 Indicates the subway line state in either the North or East direction (*direction in undocumented, but this is my best guess*).
 
-**Direction 1 State**
+**Direction 1 State**<br>
 Indicates the subway line state in either the South or West direction (*direction in undocumented, but this is my best guess*).
 
-**Delays Description**
+**Delays Description**<br>
 A full description of why the line is delayed.
 
-**Service Change Description**
+**Service Change Description**<br>
 A full description of the changes to the line service.
 
-**Planned Work Description**
+**Planned Work Description**<br>
 A full description of any planned work currently occuring on the line.
 
-![](iicky.github.com/homeassistant-mta-subway/images/Sensor States Screen Shot.png)
+![](images/Sensor States Screen Shot.png?raw=true)
 
 ## Installation
 
