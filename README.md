@@ -40,7 +40,7 @@ A full description of any planned work currently occuring on the line.
 
 ## Installation
 
-To install the sensor, copy the `mta_subway.py` script to a directory called `custom_components/sensor` in your Home Assistant configuration directory.
+To install the sensor, copy the `sensor.py` script to a directory called `custom_components/mta_subway` in your Home Assistant configuration directory.
 
 To install the offical MTA line icons, copy the `www/mta_subway` directory and all `svg` files to your Home Assistant configuration directory.
 
