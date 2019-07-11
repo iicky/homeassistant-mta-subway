@@ -49,8 +49,9 @@ SUBWAY_LINES = [
 STATE_PRIORITY = {
     'Delays': 1,
     "Service Change": 2,
-    "Planned Work": 3,
-    "Good Service": 4,
+    "Local to Express": 3,
+    "Planned Work": 4,
+    "Good Service": 5,
 }
 
 URL = 'http://web.mta.info/status/ServiceStatusSubway.xml'
@@ -217,16 +218,22 @@ def parse_subway_status(data):
             for _ in situations
         ]
 
-        # Set the current state using the minimum of the
-        # ordinal STATE_PRIORITY dictionary.
+        # Look for overlap of statuses with known states
+        # in STATE_PRIORITY dictionary
         matches = set(
             STATE_PRIORITY.keys()
         ).intersection(set(statuses))
 
-        line_status[line]['state'] = min(
-            {_: STATE_PRIORITY[_] for _ in matches},
-            key=STATE_PRIORITY.get
-        )
+        # Set the current state using the minimum of the
+        # ordinal STATE_PRIORITY dictionary, or unknown if
+        # state does not exist in dictionary.
+        if len(matches) > 0:
+            line_status[line]['state'] = min(
+                {_: STATE_PRIORITY[_] for _ in matches},
+                key=STATE_PRIORITY.get
+            )
+        else:
+            line_status[line]['state'] = 'Unknown'
 
         # Determine state for each direction on the line.
         dir_states = {
@@ -253,10 +260,14 @@ def parse_subway_status(data):
             ).intersection(set(dir_states[dct]))
 
             direction = 'direction_{}_state'.format(dct)
-            line_status[line][direction] = min(
-                {_: STATE_PRIORITY[_] for _ in matches},
-                key=STATE_PRIORITY.get
-            )
+
+            if len(matches) > 0:
+                line_status[line][direction] = min(
+                    {_: STATE_PRIORITY[_] for _ in matches},
+                    key=STATE_PRIORITY.get
+                )
+            else:
+                line_status[line][direction] = 'Unknown'
 
         # Set line status descriptions.
         for status in STATE_PRIORITY:
