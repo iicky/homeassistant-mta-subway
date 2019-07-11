@@ -16,7 +16,7 @@ from homeassistant.util import Throttle
 
 _LOGGER = logging.getLogger(__name__)
 
-CONF_LINE = 'line'
+CONF_LINE = "line"
 SCAN_INTERVAL = timedelta(seconds=60)
 
 SUBWAY_LINES = [
@@ -27,34 +27,34 @@ SUBWAY_LINES = [
     5,
     6,
     7,
-    'A',
-    'C',
-    'E',
-    'B',
-    'D',
-    'F',
-    'M',
-    'G',
-    'J',
-    'Z',
-    'L',
-    'N',
-    'Q',
-    'R',
-    'W',
-    'S',
-    'SI',
+    "A",
+    "C",
+    "E",
+    "B",
+    "D",
+    "F",
+    "M",
+    "G",
+    "J",
+    "Z",
+    "L",
+    "N",
+    "Q",
+    "R",
+    "W",
+    "S",
+    "SI",
 ]
 
 STATE_PRIORITY = {
-    'Delays': 1,
+    "Delays": 1,
     "Service Change": 2,
     "Local to Express": 3,
     "Planned Work": 4,
     "Good Service": 5,
 }
 
-URL = 'http://web.mta.info/status/ServiceStatusSubway.xml'
+URL = "http://web.mta.info/status/ServiceStatusSubway.xml"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_LINE):
@@ -80,7 +80,7 @@ class MTASubwaySensor(Entity):
     def __init__(self, name, data):
         """ Initalize the sensor.
         """
-        self._name = 'MTA Subway ' + str(name)
+        self._name = "MTA Subway " + str(name)
         self._line = name
         self._data = data
         self._state = None
@@ -106,13 +106,13 @@ class MTASubwaySensor(Entity):
     def icon(self):
         """ Returns the icon used for the frontend.
         """
-        return 'mdi:subway'
+        return "mdi:subway"
 
     @property
     def entity_picture(self):
         """ Returns the icon used for the frontend.
         """
-        return '/local/mta_subway/{}.svg'.format(
+        return "/local/mta_subway/{}.svg".format(
             str(self._line).lower()
         )
 
@@ -121,11 +121,11 @@ class MTASubwaySensor(Entity):
         """ Returns the attributes of the sensor.
         """
         attrs = {}
-        attrs['direction_0_state'] = self._direction_0_state
-        attrs['direction_1_state'] = self._direction_1_state
-        attrs['delays_description'] = self._delays_description
-        attrs['service_change_description'] = self._service_change_description
-        attrs['planned_work_description'] = self._planned_work_description
+        attrs["direction_0_state"] = self._direction_0_state
+        attrs["direction_1_state"] = self._direction_1_state
+        attrs["delays_description"] = self._delays_description
+        attrs["service_change_description"] = self._service_change_description
+        attrs["planned_work_description"] = self._planned_work_description
 
         return attrs
 
@@ -134,14 +134,14 @@ class MTASubwaySensor(Entity):
         """
         self._data.update()
         line_data = self._data.data[self._line]
-        self._state = line_data['state']
-        self._direction_0_state = line_data['direction_0_state']
-        self._direction_1_state = line_data['direction_1_state']
-        self._delays_description = line_data['delays_description']
+        self._state = line_data["state"]
+        self._direction_0_state = line_data["direction_0_state"]
+        self._direction_1_state = line_data["direction_1_state"]
+        self._delays_description = line_data["delays_description"]
         self._service_change_description = (
-            line_data['service_change_description']
+            line_data["service_change_description"]
         )
-        self._planned_work_description = line_data['planned_work_description']
+        self._planned_work_description = line_data["planned_work_description"]
 
 
 class MTASubwayData(object):
@@ -170,45 +170,45 @@ def parse_subway_status(data):
     # Set all line statuses to base status.
     line_status = {
         line: {
-            'state': None,
-            'direction_0_state': None,
-            'direction_1_state': None,
-            'delays_description': None,
-            'service_change_description': None,
-            'planned_work_description': None
+            "state": None,
+            "direction_0_state": None,
+            "direction_1_state": None,
+            "delays_description": None,
+            "service_change_description": None,
+            "planned_work_description": None
         }
         for line in SUBWAY_LINES
     }
 
     # Parse MTA lines from XML
-    soup = Soup(data.text, 'xml')
+    soup = Soup(data.text, "xml")
 
     # Iterate over line lookup and parse status.
     for line in SUBWAY_LINES:
 
         # Rename the MTA alias for Shuttle (S).
-        line_alias = 'H' if line == 'S' else str(line)
+        line_alias = "H" if line == "S" else str(line)
 
         # Search for line name in affected lines XML.
-        line_re = re.compile('NYCT_' + line_alias + '$')
+        line_re = re.compile("NYCT_" + line_alias + "$")
         hits = [
-            _ for _ in soup.find_all('Affects')
-            if _.findChildren('LineRef', text=line_re)
+            _ for _ in soup.find_all("Affects")
+            if _.findChildren("LineRef", text=line_re)
         ]
 
         # Set line status to Good Service if no status.
         if not hits:
             line_status[line].update({
-                'state': "Good Service",
-                'direction_0_state': "Good Service",
-                'direction_1_state': "Good Service",
+                "state": "Good Service",
+                "direction_0_state": "Good Service",
+                "direction_1_state": "Good Service",
             })
             continue
 
         # Parse all subway line situations that contain
         # affected line.
         situations = [
-            _.find_parent('PtSituationElement')
+            _.find_parent("PtSituationElement")
             for _ in hits
         ]
 
@@ -228,25 +228,25 @@ def parse_subway_status(data):
         # ordinal STATE_PRIORITY dictionary, or unknown if
         # state does not exist in dictionary.
         if len(matches) > 0:
-            line_status[line]['state'] = min(
+            line_status[line]["state"] = min(
                 {_: STATE_PRIORITY[_] for _ in matches},
                 key=STATE_PRIORITY.get
             )
         else:
-            line_status[line]['state'] = 'Unknown'
+            line_status[line]["state"] = "Unknown"
 
         # Determine state for each direction on the line.
         dir_states = {
-            '0': ['Good Service'],
-            '1': ['Good Service'],
+            "0": ["Good Service"],
+            "1": ["Good Service"],
         }
         for sit in situations:
 
             # Find affected line directions.
             directions = [
                 _.DirectionRef.text
-                for _ in sit.find_all('AffectedVehicleJourney')
-                if _.findChildren('LineRef', text=line_re)
+                for _ in sit.find_all("AffectedVehicleJourney")
+                if _.findChildren("LineRef", text=line_re)
             ]
 
             # Add states to line direction.
@@ -259,7 +259,7 @@ def parse_subway_status(data):
                 STATE_PRIORITY.keys()
             ).intersection(set(dir_states[dct]))
 
-            direction = 'direction_{}_state'.format(dct)
+            direction = "direction_{}_state".format(dct)
 
             if len(matches) > 0:
                 line_status[line][direction] = min(
@@ -267,19 +267,19 @@ def parse_subway_status(data):
                     key=STATE_PRIORITY.get
                 )
             else:
-                line_status[line][direction] = 'Unknown'
+                line_status[line][direction] = "Unknown"
 
         # Set line status descriptions.
         for status in STATE_PRIORITY:
             desc_key = (
-                status.lower().replace(' ', '_') +
-                '_description'
+                status.lower().replace(" ", "_") +
+                "_description"
             )
 
             descs = [
-                _.find('Description').text
+                _.find("Description").text
                 for _ in situations
-                if _.find('ReasonName').text == status
+                if _.find("ReasonName").text == status
             ]
             if descs:
                 line_status[line][desc_key] = (
