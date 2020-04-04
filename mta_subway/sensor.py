@@ -47,11 +47,12 @@ SUBWAY_LINES = [
 ]
 
 STATE_PRIORITY = {
-    "Delays": 1,
-    "Service Change": 2,
-    "Local to Express": 3,
-    "Planned Work": 4,
-    "Good Service": 5,
+    "Essential Service": 1,
+    "Delays": 2,
+    "Service Change": 3,
+    "Local to Express": 4,
+    "Planned Work": 5,
+    "Good Service": 6,
 }
 
 URL = "http://web.mta.info/status/ServiceStatusSubway.xml"
