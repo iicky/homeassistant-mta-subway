@@ -42,8 +42,6 @@ A full description of any planned work currently occuring on the line.
 
 To install the sensor, copy the `mta_subway` folder to a directory called `custom_components` in your Home Assistant configuration directory.
 
-To install the offical MTA line icons, copy the `www/mta_subway` directory and all `svg` files to your Home Assistant configuration directory.
-
 To use, add the following configuration to your `configuration.yaml` file for Home Assistant, removing any lines that you do not want to monitor:
 
 ```

@@ -56,6 +56,7 @@ STATE_PRIORITY = {
 }
 
 URL = "http://web.mta.info/status/ServiceStatusSubway.xml"
+ICONS = "https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/icons"
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_LINE):
@@ -113,9 +114,7 @@ class MTASubwaySensor(Entity):
     def entity_picture(self):
         """ Returns the icon used for the frontend.
         """
-        return "/local/mta_subway/{}.svg".format(
-            str(self._line).lower()
-        )
+        return f"{ICONS}/{str(self._line).lower()}.svg"
 
     @property
     def device_state_attributes(self):
