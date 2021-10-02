@@ -40,7 +40,7 @@ A full description of any planned work currently occuring on the line.
 
 ## Installation
 
-To install the sensor, copy the `mta_subway` folder to a directory called `custom_components` in your Home Assistant configuration directory.
+To install the sensor, copy the `mta_subway` folder under `custom_components` to a directory called `custom_components` in your Home Assistant configuration directory.
 
 To use, add the following configuration to your `configuration.yaml` file for Home Assistant, removing any lines that you do not want to monitor:
 
