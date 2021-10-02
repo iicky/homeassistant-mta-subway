@@ -6,6 +6,9 @@
     "issue_tracker": "https://github.com/iicky/homeassistant-mta-subway/issues",
     "dependencies": [], 
     "codeowners": ["@iicky"], 
-    "requirements": ["beautifulsoup4==4.9.3"], 
+    "requirements": [
+        "beautifulsoup4==4.9.3",
+        "lxml==4.6.3"
+    ], 
     "iot_class": "cloud_polling"
 }
