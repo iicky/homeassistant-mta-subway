@@ -3,6 +3,7 @@
     "name": "MTA Subway",
     "version": "2021.10.02",
     "documentation": "https://github.com/iicky/homeassistant-mta-subway",
+    "issue_tracker": "https://github.com/iicky/homeassistant-mta-subway/issues",
     "dependencies": [], 
     "codeowners": ["@iicky"], 
     "requirements": ["beautifulsoup4==4.9.3"], 
