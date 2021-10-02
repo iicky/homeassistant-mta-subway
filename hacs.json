@@ -1,0 +1,6 @@
+{
+  "name": "MTA Subway",
+  "domains": ["sensor"],
+  "country": ["US"],
+  "render_readme": true
+}
