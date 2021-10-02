@@ -190,7 +190,7 @@ def parse_subway_status(data):
         line_alias = "H" if line == "S" else str(line)
 
         # Search for line name in affected lines XML.
-        line_re = re.compile("NYCT_" + line_alias + "$")
+        line_re = re.compile("MTASBWY_" + line_alias + "$")
         hits = [
             _ for _ in soup.find_all("Affects")
             if _.findChildren("LineRef", text=line_re)
