@@ -46,15 +46,6 @@ SUBWAY_LINES = [
     "SI",
 ]
 
-STATE_PRIORITY = {
-    "Essential Service": 1,
-    "Delays": 2,
-    "Service Change": 3,
-    "Local to Express": 4,
-    "Planned Work": 5,
-    "Good Service": 6,
-}
-
 URL = "http://web.mta.info/status/ServiceStatusSubway.xml"
 ICONS = "https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/icons"
 
@@ -167,6 +158,12 @@ def parse_subway_status(data):
     """ Returns a nested dictionary of MTA subway line statues
         given an XML response.
     """
+    # Parse MTA lines from XML
+    soup = Soup(data.text, "xml")
+
+    # Find all incidents
+    situations = soup.find_all("PtSituationElement")
+    
     # Set all line statuses to base status.
     line_status = {
         line: {
@@ -180,9 +177,16 @@ def parse_subway_status(data):
         for line in SUBWAY_LINES
     }
 
-    # Parse MTA lines from XML
-    soup = Soup(data.text, "xml")
+    # Initialize state priority lookup
+    state_priority = {}
+    state_priority['Good Service'] = 0
 
+    # Parse priority and reason state for each incident
+    for situation in situations:
+        reason = situation.find("ReasonName").text.strip()
+        priority = int(situation.find("MessagePriority").text.strip())
+        state_priority[reason] = priority
+        
     # Iterate over line lookup and parse status.
     for line in SUBWAY_LINES:
 
@@ -221,16 +225,16 @@ def parse_subway_status(data):
         # Look for overlap of statuses with known states
         # in STATE_PRIORITY dictionary
         matches = set(
-            STATE_PRIORITY.keys()
+            state_priority.keys()
         ).intersection(set(statuses))
 
         # Set the current state using the minimum of the
         # ordinal STATE_PRIORITY dictionary, or unknown if
         # state does not exist in dictionary.
         if len(matches) > 0:
-            line_status[line]["state"] = min(
-                {_: STATE_PRIORITY[_] for _ in matches},
-                key=STATE_PRIORITY.get
+            line_status[line]["state"] = max(
+                {_: state_priority[_] for _ in matches},
+                key=state_priority.get
             )
         else:
             line_status[line]["state"] = "Unknown"
@@ -253,31 +257,31 @@ def parse_subway_status(data):
             for dct in directions:
                 dir_states[dct].append(sit.ReasonName.text)
 
-        # Set the direction states using STATE_PRIORITY.
+        # Set the direction states using state_priority.
         for dct in dir_states:
             matches = set(
-                STATE_PRIORITY.keys()
+                state_priority.keys()
             ).intersection(set(dir_states[dct]))
 
             direction = "direction_{}_state".format(dct)
 
             if len(matches) > 0:
-                line_status[line][direction] = min(
-                    {_: STATE_PRIORITY[_] for _ in matches},
-                    key=STATE_PRIORITY.get
+                line_status[line][direction] = max(
+                    {_: state_priority[_] for _ in matches},
+                    key=state_priority.get
                 )
             else:
                 line_status[line][direction] = "Unknown"
-
+       
         # Set line status descriptions.
-        for status in STATE_PRIORITY:
+        for status in state_priority:
             desc_key = (
                 status.lower().replace(" ", "_") +
                 "_description"
             )
 
             descs = [
-                _.find("Description").text
+                _.find("LongDescription").text
                 for _ in situations
                 if _.find("ReasonName").text == status
             ]
