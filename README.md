@@ -2,47 +2,47 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
-
-#### ALERT
-
-It apperas that the MTA has not updated their [Service Status Feed](http://web.mta.info/status/ServiceStatusSubway.xml) since 2021-10-05, so this sensor is not updating either. I will be investigating the other MTA data feeds, but if you have any suggestions feel free to open an issue.  Thanks!
-
 ## Overview
 
-A sensor to provide MTA Subway service statuses for Home Assistant. The sensor reads from the offical [MTA Service Status](http://web.mta.info/status/ServiceStatusSubway.xml) XML feed and provides both the overall line status as a sensor state as well as status descriptions as sensor attributes. The train line states are updated every minute from the MTA feed.
+A sensor to provide MTA Subway service statuses for Home Assistant. The sensor reads from the [goodservice.io](goodservice.io) API and provides both the overall line status as a sensor state as well as status descriptions and route directions as sensor attributes. The train line states are updated every minute from the detailed [goodservice.io](https://www.goodservice.io/api/routes?detailed=1) route endpoint.
 
 Credit for the line icons goes to [louh](https://github.com/louh) and his great [NYC Subway Icons repo](https://github.com/louh/nyc-subway-icons) (used with some slight renaming).
 
 ### Sensor States
 - Good Service
-- Delays
 - Planned Work
+- Slow
+- Not Good
+- Delays
 - Service Change
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Subway%20Group%20Screen%20Shot.png" alt="Example subway card in Home Assistant">
+  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/images/Subway%20Group%20Screen%20Shot.png" alt="Example subway card in Home Assistant">
 </p>
 
 ### Sensor Attributes
 
-**Direction 0 State**<br>
-Indicates the subway line state in either the North or East direction (*direction in undocumented, but this is my best guess*).
+**Color**<br>
+Indicates the color of the subway line.
 
-**Direction 1 State**<br>
-Indicates the subway line state in either the South or West direction (*direction in undocumented, but this is my best guess*).
+**Scheduled**<br>
+Indicates whether the route is scheduled or not.
 
-**Delays Description**<br>
-A full description of why the line is delayed.
+**Direction statuses**<br>
+Indicates the route status for both route directions.
 
-**Service Change Description**<br>
-A full description of the changes to the line service.
+**Delay summaries**<br>
+A full description of route delays for both directions.
 
-**Planned Work Description**<br>
-A full description of any planned work currently occuring on the line.
+**Service irregularity summaries**<br>
+A full description of any service irregularity summaries currently occuring on the line for both route directions.
+
+**Service change summaries**<br>
+A full description of any planned work currently for both directions individually and combined.
 
 <br>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Sensor%20States%20Screen%20Shot.png" alt="Example sensor state and attributes in Home Assistant">
+  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/images/Sensor%20States%20Screen%20Shot.png" alt="Example sensor state and attributes in Home Assistant">
 </p>
 
 ## Installation
@@ -55,28 +55,33 @@ To use, add the following configuration to your `configuration.yaml` file for Ho
 sensor:
   - platform: mta_subway
     line:
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - A
-      - C
-      - E
-      - B
-      - D
-      - F
-      - M
-      - G
-      - J
-      - Z
-      - L
-      - N
-      - Q
-      - R
-      - W
-      - S
-      - SI
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+      - '6'
+      - '6X'
+      - '7'
+      - '7X'
+      - 'A'
+      - 'B'
+      - 'C'
+      - 'D'
+      - 'E'
+      - 'F'
+      - 'FX'
+      - 'G'
+      - 'J'
+      - 'L'
+      - 'M'
+      - 'N'
+      - 'Q'
+      - 'R'
+      - 'GS'
+      - 'FS'
+      - 'H'
+      - 'SI'
+      - 'W'
+      - 'Z'
 ```
