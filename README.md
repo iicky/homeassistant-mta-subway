@@ -17,7 +17,7 @@ Credit for the line icons goes to [louh](https://github.com/louh) and his great 
 - Service Change
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Subway%20Group%20Screen%20Shot.png" alt="Example subway card in Home Assistant">
+  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/images/Subway%20Group%20Screen%20Shot.png" alt="Example subway card in Home Assistant">
 </p>
 
 ### Sensor Attributes
@@ -42,7 +42,7 @@ A full description of any planned work currently for both directions individuall
 
 <br>
 <p align="center">
-  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/master/images/Sensor%20States%20Screen%20Shot.png" alt="Example sensor state and attributes in Home Assistant">
+  <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/images/Sensor%20States%20Screen%20Shot.png" alt="Example sensor state and attributes in Home Assistant">
 </p>
 
 ## Installation
