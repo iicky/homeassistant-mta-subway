@@ -1,14 +1,11 @@
 {
     "domain": "mta_subway",
     "name": "MTA Subway",
-    "version": "2021.10.02",
+    "version": "v0.2.0",
     "documentation": "https://github.com/iicky/homeassistant-mta-subway",
     "issue_tracker": "https://github.com/iicky/homeassistant-mta-subway/issues",
     "dependencies": [], 
     "codeowners": ["@iicky"], 
-    "requirements": [
-        "beautifulsoup4==4.9.3",
-        "lxml==4.6.3"
-    ], 
+    "requirements": [], 
     "iot_class": "cloud_polling"
 }
