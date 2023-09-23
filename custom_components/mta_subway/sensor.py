@@ -12,6 +12,40 @@ import voluptuous as vol
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.helpers.entity import Entity
 from homeassistant.util import Throttle
+from homeassistant import config_entries
+
+class MTASubwayConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    VERSION = 1
+
+    async def async_step_user(self, user_input=None):
+        # This step is called when user initializes a configuration flow from the UI.
+        errors = {}
+        if user_input is not None:
+            # Validate the user input and if valid, create a new entry
+            # For example:
+            valid = await self._validate_input(user_input)
+            if valid:
+                return self.async_create_entry(
+                    title=user_input[CONF_STATION] + " " + user_input[CONF_LINE],
+                    data=user_input,
+                )
+            else:
+                errors["base"] = "invalid_input"
+        
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema({
+                vol.Required(CONF_STATION): str,
+                vol.Required(CONF_LINE): str,
+            }),
+            errors=errors,
+        )
+    
+    async def _validate_input(self, user_input):
+        # Perform validation of user input, possibly by making a request to the API
+        # Return True if valid, else False
+        pass
+
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -162,3 +196,31 @@ class GoodServiceData(object):
             _LOGGER.warning("Invalid response from goodservice.io API.")
         else:
             self.data = response.json()
+
+class GoodServiceData:
+    async def get_arrival_times(self, station, line):
+        # Make a request to the API to get the arrival times of the next two trains
+        # for the specified line at the specified station.
+        # Parse the response and return the required information.
+        
+        # Example:
+        url = f"https://api.example.com/arrival_times?station={station}&line={line}"
+        response = await self._session.get(url)
+        data = await response.json()
+        return data["arrival_times"]
+
+class MTAArrivalTimeSensor(Entity):
+    def __init__(self, station, line, data):
+        self._station = station
+        self._line = line
+        self._data = data
+        self._state = None
+        # Initialize other required variables
+    
+    async def async_update(self):
+        # Fetch the arrival time information for the specified station and line from the API
+        # Update the state and attributes of the sensor with the retrieved information
+        
+        # Example:
+        response = await self._data.get_arrival_times(self._station, self._line)
+        self._state = response["next_arrival_time"]
