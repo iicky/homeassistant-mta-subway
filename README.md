@@ -4,7 +4,7 @@
 
 ## Overview
 
-A sensor to provide MTA Subway service statuses for Home Assistant. The sensor reads from the [goodservice.io](goodservice.io) API and provides both the overall line status as a sensor state as well as status descriptions and route directions as sensor attributes. The train line states are updated every minute from the detailed [goodservice.io](https://www.goodservice.io/api/routes?detailed=1) route endpoint.
+A sensor to provide MTA Subway service statuses for Home Assistant. The sensor reads from the [goodservice.io](https://goodservice.io) API and provides both the overall line status as a sensor state as well as status descriptions and route directions as sensor attributes. The train line states are updated every minute from the detailed [goodservice.io](https://www.goodservice.io/api/routes?detailed=1) route endpoint.
 
 Credit for the line icons goes to [louh](https://github.com/louh) and his great [NYC Subway Icons repo](https://github.com/louh/nyc-subway-icons) (used with some slight renaming).
 
