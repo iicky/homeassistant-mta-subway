@@ -115,24 +115,32 @@ class MTASubwaySensor(Entity):
         attrs = {}
         attrs["color"] = self._route_data["color"]
         attrs["scheduled"] = self._route_data["scheduled"]        
+        has_direction_statuses = "direction_statuses" in self._route_data
+        attrs["has_direction_statuses"] = has_direction_statuses
         attrs["direction_statuses"] = (
             self._route_data["direction_statuses"]
-            if "direction_statuses" in self._route_data
+            if has_direction_statuses
             else {"north": None, "south": None}
         )
+        has_delay_summaries = "delay_summaries" in self._route_data
+        attrs["has_delay_summaries"] = has_delay_summaries
         attrs["delay_summaries"] = (
             self._route_data["delay_summaries"]
-            if "delay_summaries" in self._route_data
+            if has_delay_summaries
             else {"north": None, "south": None}
         )
+        has_service_irregularity_summaries = "service_irregularity_summaries" in self._route_data
+        attrs["has_service_irregularity_summaries"] = has_service_irregularity_summaries
         attrs["service_irregularity_summaries"] = (
             self._route_data["service_irregularity_summaries"]
-            if "service_irregularity_summaries" in self._route_data
+            if has_service_irregularity_summaries
             else {"north": None, "south": None}
         )
+        has_service_change_summaries = "service_change_summaries" in self._route_data
+        attrs["has_service_change_summaries"] = has_service_change_summaries
         attrs["service_change_summaries"] = (
             self._route_data["service_change_summaries"]
-            if "service_change_summaries" in self._route_data
+            if has_service_change_summaries
             else {"both": [], "north": [], "south": []}
         )
         return attrs
