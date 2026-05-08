@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "homeassistant_mta_subway",
+  "project_id": "da734acd-7864-433f-8081-2cd19169e2b4"
+}
