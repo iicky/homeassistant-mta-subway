@@ -1,172 +1,103 @@
-"""
-Sensor for checking the status of NYC MTA Subway lines.
-"""
+"""Sensor platform for MTA Subway service status."""
+from __future__ import annotations
 
-import logging
-import re
-from datetime import timedelta
+from typing import Any
 
-import homeassistant.helpers.config_validation as cv
-import requests
 import voluptuous as vol
-from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.helpers.entity import Entity
-from homeassistant.util import Throttle
 
-_LOGGER = logging.getLogger(__name__)
+from homeassistant.components.sensor import PLATFORM_SCHEMA, SensorEntity
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.device_registry import DeviceEntryType
+from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-CONF_LINE = "line"
-SCAN_INTERVAL = timedelta(seconds=60)
+from .const import CONF_LINE, DOMAIN, ICONS_BASE, SUBWAY_LINES
+from .coordinator import MTASubwayCoordinator
 
-URL = "https://www.goodservice.io/api/routes?detailed=1"
-ICONS = "https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/icons"
+PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+    {
+        vol.Required(CONF_LINE): vol.All(cv.ensure_list, [vol.In(SUBWAY_LINES)]),
+    }
+)
 
-
-SUBWAY_LINES = [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "6X",
-    "7",
-    "7X",
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "FX",
-    "G",
-    "J",
-    "L",
-    "M",
-    "N",
-    "Q",
-    "R",
-    "GS",
-    "FS",
-    "H",
-    "SI",
-    "W",
-    "Z",
-]
+_DIRECTION_DEFAULT: dict[str, Any] = {"north": None, "south": None}
+_CHANGE_DEFAULT: dict[str, Any] = {"both": [], "north": [], "south": []}
 
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    vol.Required(CONF_LINE):
-        vol.All(cv.ensure_list, [vol.In(list(SUBWAY_LINES))]),
-})
+async def async_setup_platform(
+    hass: HomeAssistant,
+    config: ConfigType,
+    async_add_entities: AddEntitiesCallback,
+    discovery_info: DiscoveryInfoType | None = None,
+) -> None:
+    """Set up MTA Subway sensors from YAML."""
+    domain_data = hass.data.setdefault(DOMAIN, {})
+    coordinator: MTASubwayCoordinator | None = domain_data.get("coordinator")
+    if coordinator is None:
+        coordinator = MTASubwayCoordinator(hass)
+        await coordinator.async_refresh()
+        domain_data["coordinator"] = coordinator
+
+    lines: list[str] = config[CONF_LINE]
+    async_add_entities(MTASubwaySensor(coordinator, line) for line in lines)
 
 
-def setup_platform(hass, config, add_devices, discovery_info=None):
-    """ Sets up the MTA Subway sensors.
-    """
-    data = GoodServiceData()
-    data.update()
-    sensors = [
-        MTASubwaySensor(line, data)
-        for line in config.get(CONF_LINE)
-    ]
-    add_devices(sensors, True)
+class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
+    """Service-status sensor for a single MTA Subway line."""
 
-class MTASubwaySensor(Entity):
-    """ Sensor that reads the status for an MTA Subway line.
-    """
-    def __init__(self, name, data):
-        """ Initalize the sensor.
-        """
-        self._name = "MTA Subway " + str(name)
-        self._line = name
-        self._data = data
-        self._route_data = None
-        self._state = None
+    _attr_icon = "mdi:subway"
 
-    @property
-    def name(self):
-        """ Returns the name of the sensor.
-        """
-        return self._name
-
-    @property
-    def state(self):
-        """ Returns the state of the sensor.
-        """
-        return self._state
-
-    @property
-    def entity_picture(self):
-        """ Returns the icon used for the frontend.
-        """
-        return f"{ICONS}/{str(self._line).upper()}.svg"
-
-    @property
-    def icon(self):
-        """ Returns the icon used for the frontend.
-        """
-        return "mdi:subway"
-
-    @property
-    def extra_state_attributes (self):
-        """ Returns the attributes of the sensor.
-        """
-        attrs = {}
-        attrs["color"] = self._route_data["color"]
-        attrs["scheduled"] = self._route_data["scheduled"]        
-        has_direction_statuses = "direction_statuses" in self._route_data
-        attrs["has_direction_statuses"] = has_direction_statuses
-        attrs["direction_statuses"] = (
-            self._route_data["direction_statuses"]
-            if has_direction_statuses
-            else {"north": None, "south": None}
+    def __init__(self, coordinator: MTASubwayCoordinator, line: str) -> None:
+        super().__init__(coordinator)
+        self._line = line
+        self._attr_name = f"MTA Subway {line}"
+        self._attr_unique_id = f"{DOMAIN}_{line.lower()}"
+        self._attr_entity_picture = f"{ICONS_BASE}/{line.upper()}.svg"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, "service")},
+            name="MTA Subway",
+            manufacturer="Metropolitan Transportation Authority",
+            model="Subway service status",
+            entry_type=DeviceEntryType.SERVICE,
+            configuration_url="https://www.subwaynow.app/",
         )
-        has_delay_summaries = "delay_summaries" in self._route_data
-        attrs["has_delay_summaries"] = has_delay_summaries
-        attrs["delay_summaries"] = (
-            self._route_data["delay_summaries"]
-            if has_delay_summaries
-            else {"north": None, "south": None}
-        )
-        has_service_irregularity_summaries = "service_irregularity_summaries" in self._route_data
-        attrs["has_service_irregularity_summaries"] = has_service_irregularity_summaries
-        attrs["service_irregularity_summaries"] = (
-            self._route_data["service_irregularity_summaries"]
-            if has_service_irregularity_summaries
-            else {"north": None, "south": None}
-        )
-        has_service_change_summaries = "service_change_summaries" in self._route_data
-        attrs["has_service_change_summaries"] = has_service_change_summaries
-        attrs["service_change_summaries"] = (
-            self._route_data["service_change_summaries"]
-            if has_service_change_summaries
-            else {"both": [], "north": [], "south": []}
-        )
-        return attrs
 
-    def update(self):
-        """ Updates the sensor.
-        """
-        self._data.update()
-        self._route_data = self._data.data["routes"][self._line]
-        
-        # Update sensor state
-        self._state = self._route_data["status"]
+    @property
+    def _route(self) -> dict[str, Any] | None:
+        data = self.coordinator.data
+        if not data:
+            return None
+        return data.get(self._line)
 
-class GoodServiceData(object):
-    """ Query goodservice.io API.
-    """
+    @property
+    def available(self) -> bool:
+        return super().available and self._route is not None
 
-    def __init__(self):
-        self.data = None
+    @property
+    def native_value(self) -> str | None:
+        route = self._route
+        return route.get("status") if route else None
 
-    @Throttle(SCAN_INTERVAL)
-    def update(self):
-        """ Update data based on SCAN_INTERVAL.
-        """
-        response = requests.get(URL)
-        if response.status_code != 200:
-            _LOGGER.warning("Invalid response from goodservice.io API.")
-        else:
-            self.data = response.json()
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        route = self._route or {}
+        return {
+            "color": route.get("color"),
+            "scheduled": route.get("scheduled"),
+            "has_direction_statuses": "direction_statuses" in route,
+            "direction_statuses": route.get("direction_statuses", _DIRECTION_DEFAULT),
+            "has_delay_summaries": "delay_summaries" in route,
+            "delay_summaries": route.get("delay_summaries", _DIRECTION_DEFAULT),
+            "has_service_irregularity_summaries": "service_irregularity_summaries"
+            in route,
+            "service_irregularity_summaries": route.get(
+                "service_irregularity_summaries", _DIRECTION_DEFAULT
+            ),
+            "has_service_change_summaries": "service_change_summaries" in route,
+            "service_change_summaries": route.get(
+                "service_change_summaries", _CHANGE_DEFAULT
+            ),
+        }
