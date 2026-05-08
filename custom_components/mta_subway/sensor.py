@@ -18,6 +18,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_LINE, DOMAIN, ICONS_BASE, SUBWAY_LINES
 from .coordinator import MTASubwayCoordinator
+from .models import Route
 
 PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(  # pyright: ignore[reportUnknownMemberType]
     {
@@ -80,28 +81,41 @@ class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
 
     def _refresh_attrs(self) -> None:
         data = self.coordinator.data
-        route: dict[str, Any] | None = data.get(self._line) if data else None
+        route: Route | None = data.get(self._line) if data else None
         if route is None:
             self._route_present = False
             self._attr_native_value = None
             self._attr_extra_state_attributes = {}
             return
         self._route_present = True
-        self._attr_native_value = route.get("status")
+        self._attr_native_value = route.status
+        present = route.model_fields_set
         self._attr_extra_state_attributes = {
-            "color": route.get("color"),
-            "scheduled": route.get("scheduled"),
-            "has_direction_statuses": "direction_statuses" in route,
-            "direction_statuses": route.get("direction_statuses", _DIRECTION_DEFAULT),
-            "has_delay_summaries": "delay_summaries" in route,
-            "delay_summaries": route.get("delay_summaries", _DIRECTION_DEFAULT),
-            "has_service_irregularity_summaries": "service_irregularity_summaries"
-            in route,
-            "service_irregularity_summaries": route.get(
-                "service_irregularity_summaries", _DIRECTION_DEFAULT
+            "color": route.color,
+            "scheduled": route.scheduled,
+            "has_direction_statuses": "direction_statuses" in present,
+            "direction_statuses": (
+                route.direction_statuses.model_dump()
+                if route.direction_statuses is not None
+                else _DIRECTION_DEFAULT
             ),
-            "has_service_change_summaries": "service_change_summaries" in route,
-            "service_change_summaries": route.get(
-                "service_change_summaries", _CHANGE_DEFAULT
+            "has_delay_summaries": "delay_summaries" in present,
+            "delay_summaries": (
+                route.delay_summaries.model_dump()
+                if route.delay_summaries is not None
+                else _DIRECTION_DEFAULT
+            ),
+            "has_service_irregularity_summaries": "service_irregularity_summaries"
+            in present,
+            "service_irregularity_summaries": (
+                route.service_irregularity_summaries.model_dump()
+                if route.service_irregularity_summaries is not None
+                else _DIRECTION_DEFAULT
+            ),
+            "has_service_change_summaries": "service_change_summaries" in present,
+            "service_change_summaries": (
+                route.service_change_summaries.model_dump()
+                if route.service_change_summaries is not None
+                else _CHANGE_DEFAULT
             ),
         }

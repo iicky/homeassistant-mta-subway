@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any
 import pytest
 
 from custom_components.mta_subway.coordinator import MTASubwayCoordinator
+from custom_components.mta_subway.models import Route
 from custom_components.mta_subway.sensor import MTASubwaySensor
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ ROUTE_PAYLOAD: dict[str, Any] = {
 @pytest.fixture
 async def coordinator(hass: HomeAssistant) -> MTASubwayCoordinator:
     coord = MTASubwayCoordinator(hass)
-    coord.data = {"1": ROUTE_PAYLOAD}
+    coord.data = {"1": Route.model_validate(ROUTE_PAYLOAD)}
     coord.last_update_success = True
     return coord
 
@@ -60,7 +61,15 @@ async def test_sensor_attributes_fall_back_when_keys_missing(
     coordinator: MTASubwayCoordinator,
 ) -> None:
     coordinator.data = {
-        "1": {"status": "Good Service", "color": "#ee352e", "scheduled": True}
+        "1": Route.model_validate(
+            {
+                "id": "1",
+                "name": "1",
+                "color": "#ee352e",
+                "status": "Good Service",
+                "scheduled": True,
+            }
+        )
     }
     sensor = MTASubwaySensor(coordinator, "1")
     attrs = sensor.extra_state_attributes
