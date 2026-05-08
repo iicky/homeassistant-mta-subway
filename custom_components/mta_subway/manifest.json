@@ -1,10 +1,10 @@
 {
     "domain": "mta_subway",
     "name": "MTA Subway",
-    "version": "0.3.0",
-    "documentation": "https://github.com/iicky/homeassistant-mta-subway",
-    "issue_tracker": "https://github.com/iicky/homeassistant-mta-subway/issues",
     "codeowners": ["@iicky"],
+    "documentation": "https://github.com/iicky/homeassistant-mta-subway",
+    "integration_type": "service",
     "iot_class": "cloud_polling",
-    "integration_type": "service"
+    "issue_tracker": "https://github.com/iicky/homeassistant-mta-subway/issues",
+    "version": "0.3.0"
 }
