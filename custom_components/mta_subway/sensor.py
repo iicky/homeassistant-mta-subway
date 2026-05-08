@@ -1,15 +1,17 @@
 """Sensor platform for MTA Subway service status."""
+
 from __future__ import annotations
 
 from typing import Any
 
 import voluptuous as vol
-
-from homeassistant.components.sensor import PLATFORM_SCHEMA, SensorEntity
-from homeassistant.core import HomeAssistant
+from homeassistant.components.sensor import (
+    PLATFORM_SCHEMA as SENSOR_PLATFORM_SCHEMA,
+)
+from homeassistant.components.sensor import SensorEntity
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -17,7 +19,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import CONF_LINE, DOMAIN, ICONS_BASE, SUBWAY_LINES
 from .coordinator import MTASubwayCoordinator
 
-PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
+PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(  # pyright: ignore[reportUnknownMemberType]
     {
         vol.Required(CONF_LINE): vol.All(cv.ensure_list, [vol.In(SUBWAY_LINES)]),
     }
@@ -34,7 +36,7 @@ async def async_setup_platform(
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
     """Set up MTA Subway sensors from YAML."""
-    domain_data = hass.data.setdefault(DOMAIN, {})
+    domain_data: dict[str, Any] = hass.data.setdefault(DOMAIN, {})
     coordinator: MTASubwayCoordinator | None = domain_data.get("coordinator")
     if coordinator is None:
         coordinator = MTASubwayCoordinator(hass)
@@ -53,6 +55,7 @@ class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
     def __init__(self, coordinator: MTASubwayCoordinator, line: str) -> None:
         super().__init__(coordinator)
         self._line = line
+        self._route_present = False
         self._attr_name = f"MTA Subway {line}"
         self._attr_unique_id = f"{DOMAIN}_{line.lower()}"
         self._attr_entity_picture = f"{ICONS_BASE}/{line.upper()}.svg"
@@ -64,27 +67,28 @@ class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
             entry_type=DeviceEntryType.SERVICE,
             configuration_url="https://www.subwaynow.app/",
         )
+        self._refresh_attrs()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self._refresh_attrs()
+        super()._handle_coordinator_update()
 
     @property
-    def _route(self) -> dict[str, Any] | None:
+    def available(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return super().available and self._route_present
+
+    def _refresh_attrs(self) -> None:
         data = self.coordinator.data
-        if not data:
-            return None
-        return data.get(self._line)
-
-    @property
-    def available(self) -> bool:
-        return super().available and self._route is not None
-
-    @property
-    def native_value(self) -> str | None:
-        route = self._route
-        return route.get("status") if route else None
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        route = self._route or {}
-        return {
+        route: dict[str, Any] | None = data.get(self._line) if data else None
+        if route is None:
+            self._route_present = False
+            self._attr_native_value = None
+            self._attr_extra_state_attributes = {}
+            return
+        self._route_present = True
+        self._attr_native_value = route.get("status")
+        self._attr_extra_state_attributes = {
             "color": route.get("color"),
             "scheduled": route.get("scheduled"),
             "has_direction_statuses": "direction_statuses" in route,
