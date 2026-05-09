@@ -54,10 +54,22 @@ quote-style = "double"
 [tool.pyright]
 include = ["custom_components/mta_subway", "tests"]
 exclude = ["**/__pycache__", ".venv"]
+extraPaths = ["."]
 pythonVersion = "3.13"
 typeCheckingMode = "strict"
 venvPath = "."
 venv = ".venv"
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportTypedDictNotRequiredAccess = "none"
+reportUnknownMemberType = "none"
+reportUnknownArgumentType = "none"
+reportUnknownVariableType = "none"
+reportUnknownParameterType = "none"
+reportUnknownLambdaType = "none"
+reportMissingTypeArgument = "none"
+reportMissingTypeStubs = "none"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

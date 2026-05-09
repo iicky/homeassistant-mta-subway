@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+import logging
+from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
 from homeassistant.components.sensor import (
     PLATFORM_SCHEMA as SENSOR_PLATFORM_SCHEMA,
 )
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.config_entries import SOURCE_IMPORT
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
@@ -19,6 +21,11 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import CONF_LINE, DOMAIN, ICONS_BASE, SUBWAY_LINES
 from .coordinator import MTASubwayCoordinator
 from .models import Route
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = SENSOR_PLATFORM_SCHEMA.extend(  # pyright: ignore[reportUnknownMemberType]
     {
@@ -36,15 +43,29 @@ async def async_setup_platform(
     async_add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
-    """Set up MTA Subway sensors from YAML."""
-    domain_data: dict[str, Any] = hass.data.setdefault(DOMAIN, {})
-    coordinator: MTASubwayCoordinator | None = domain_data.get("coordinator")
-    if coordinator is None:
-        coordinator = MTASubwayCoordinator(hass)
-        await coordinator.async_refresh()
-        domain_data["coordinator"] = coordinator
+    """Import legacy YAML config into a config entry."""
+    _LOGGER.warning(
+        "Configuring MTA Subway via YAML is deprecated. "
+        "Your configuration has been imported; please remove the "
+        "`platform: mta_subway` block from configuration.yaml."
+    )
+    hass.async_create_task(
+        hass.config_entries.flow.async_init(
+            DOMAIN,
+            context={"source": SOURCE_IMPORT},
+            data={CONF_LINE: config[CONF_LINE]},
+        )
+    )
 
-    lines: list[str] = config[CONF_LINE]
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up MTA Subway sensors from a config entry."""
+    coordinator: MTASubwayCoordinator = hass.data[DOMAIN][entry.entry_id]
+    lines: list[str] = entry.options.get(CONF_LINE) or entry.data[CONF_LINE]
     async_add_entities(MTASubwaySensor(coordinator, line) for line in lines)
 
 

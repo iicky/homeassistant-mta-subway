@@ -1,0 +1,27 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "MTA Subway",
+                "description": "Select the subway lines you want to track.",
+                "data": {
+                    "line": "Lines"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "MTA Subway is already configured."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "MTA Subway lines",
+                "description": "Add or remove subway lines.",
+                "data": {
+                    "line": "Lines"
+                }
+            }
+        }
+    }
+}
