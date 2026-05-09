@@ -76,7 +76,7 @@ reportPrivateUsage = "none"
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "-ra -q --cov=custom_components.mta_subway --cov-report=term --cov-report=xml"
+addopts = "-ra -q --cov=custom_components.mta_subway --cov-report=term --cov-report=xml --junitxml=junit.xml -o junit_family=legacy"
 
 [tool.coverage.run]
 source = ["custom_components/mta_subway"]

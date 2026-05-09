@@ -9,6 +9,7 @@ __pycache__/
 .coverage
 coverage.xml
 htmlcov/
+junit.xml
 
 # Local tooling (not for upstream)
 AGENTS.md
