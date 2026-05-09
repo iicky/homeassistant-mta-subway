@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    groups:
+      home-assistant:
+        patterns:
+          - "homeassistant"
+          - "pytest-homeassistant-custom-component"
+      dev-tooling:
+        patterns:
+          - "ruff"
+          - "pyright"
+          - "pytest*"
+          - "pre-commit"
+          - "aioresponses"
