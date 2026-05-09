@@ -1277,6 +1277,7 @@ dev = [
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
     { name = "pytest-homeassistant-custom-component" },
     { name = "ruff" },
 ]
@@ -1292,6 +1293,7 @@ dev = [
     { name = "pyright", specifier = ">=1.1.380" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.23" },
+    { name = "pytest-cov", specifier = ">=5.0" },
     { name = "pytest-homeassistant-custom-component", specifier = ">=0.13" },
     { name = "ruff", specifier = ">=0.7" },
 ]

@@ -6,6 +6,9 @@ __pycache__/
 .pytest_cache/
 .pyright/
 *.egg-info/
+.coverage
+coverage.xml
+htmlcov/
 
 # Local tooling (not for upstream)
 AGENTS.md
