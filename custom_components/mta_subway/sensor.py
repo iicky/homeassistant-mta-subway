@@ -66,7 +66,12 @@ async def async_setup_entry(
     """Set up MTA Subway sensors from a config entry."""
     data: MTASubwayData = hass.data[DOMAIN][entry.entry_id]
     lines: list[str] = entry.options.get(CONF_LINE) or entry.data[CONF_LINE]
-    async_add_entities(MTASubwaySensor(data.routes, line) for line in lines)
+    entities: list[CoordinatorEntity[MTASubwayCoordinator]] = []
+    for line in lines:
+        entities.append(MTASubwaySensor(data.routes, line))
+        entities.append(MTASubwayDirectionSensor(data.routes, line, "north"))
+        entities.append(MTASubwayDirectionSensor(data.routes, line, "south"))
+    async_add_entities(entities)
 
 
 class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
@@ -140,3 +145,49 @@ class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
                 else _CHANGE_DEFAULT
             ),
         }
+
+
+class MTASubwayDirectionSensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
+    """North- or south-bound service status for a single MTA Subway line."""
+
+    _attr_icon = "mdi:subway"
+
+    def __init__(
+        self, coordinator: MTASubwayCoordinator, line: str, direction: str
+    ) -> None:
+        super().__init__(coordinator)
+        self._line = line
+        self._direction = direction
+        self._has_direction = False
+        self._attr_name = f"MTA Subway {line} {direction}bound"
+        self._attr_unique_id = f"{DOMAIN}_{line.lower()}_{direction}"
+        self._attr_entity_picture = f"{ICONS_BASE}/{line.upper()}.svg"
+        self._attr_device_info = DeviceInfo(
+            identifiers={(DOMAIN, "service")},
+            name="MTA Subway",
+            manufacturer="Metropolitan Transportation Authority",
+            model="Subway service status",
+            entry_type=DeviceEntryType.SERVICE,
+            configuration_url="https://www.subwaynow.app/",
+        )
+        self._refresh_attrs()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self._refresh_attrs()
+        super()._handle_coordinator_update()
+
+    @property
+    def available(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride]
+        return super().available and self._has_direction
+
+    def _refresh_attrs(self) -> None:
+        data = self.coordinator.data
+        route: Route | None = data.get(self._line) if data else None
+        statuses = route.direction_statuses if route is not None else None
+        if statuses is None:
+            self._has_direction = False
+            self._attr_native_value = None
+            return
+        self._has_direction = True
+        self._attr_native_value = getattr(statuses, self._direction)

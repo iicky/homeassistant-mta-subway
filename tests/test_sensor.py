@@ -8,7 +8,10 @@ import pytest
 
 from custom_components.mta_subway.coordinator import MTASubwayCoordinator
 from custom_components.mta_subway.models import Route
-from custom_components.mta_subway.sensor import MTASubwaySensor
+from custom_components.mta_subway.sensor import (
+    MTASubwayDirectionSensor,
+    MTASubwaySensor,
+)
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -89,3 +92,37 @@ async def test_sensor_unavailable_when_route_missing(
 ) -> None:
     sensor = MTASubwaySensor(coordinator, "ZZ")
     assert sensor.available is False
+
+
+async def test_direction_sensor_reports_north_status(
+    coordinator: MTASubwayCoordinator,
+) -> None:
+    sensor = MTASubwayDirectionSensor(coordinator, "1", "north")
+    assert sensor.native_value == "Delays"
+    assert sensor.unique_id == "mta_subway_1_north"
+
+
+async def test_direction_sensor_reports_south_status(
+    coordinator: MTASubwayCoordinator,
+) -> None:
+    sensor = MTASubwayDirectionSensor(coordinator, "1", "south")
+    assert sensor.native_value == "Good Service"
+
+
+async def test_direction_sensor_unavailable_when_no_direction_data(
+    coordinator: MTASubwayCoordinator,
+) -> None:
+    coordinator.data = {
+        "1": Route.model_validate(
+            {
+                "id": "1",
+                "name": "1",
+                "color": "#ee352e",
+                "status": "Good Service",
+                "scheduled": True,
+            }
+        )
+    }
+    sensor = MTASubwayDirectionSensor(coordinator, "1", "north")
+    assert sensor.available is False
+    assert sensor.native_value is None

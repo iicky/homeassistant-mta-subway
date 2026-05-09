@@ -2,18 +2,31 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.const import Platform
 
-from .const import DOMAIN
+from .const import DOMAIN, ICONS_BASE
 from .coordinator import MTAAlertsCoordinator, MTASubwayCoordinator, MTASubwayData
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.typing import ConfigType
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR]
+
+_ICONS_DIR = Path(__file__).parent / "icons"
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the bundled subway-bullet icons as static assets."""
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(ICONS_BASE, str(_ICONS_DIR), True)]
+    )
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
