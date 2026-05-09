@@ -1,4 +1,4 @@
-"""Pydantic models for the subwaynow.app /routes?detailed=1 response."""
+"""Pydantic models for the subwaynow.app and MTA alerts feeds."""
 
 from __future__ import annotations
 
@@ -46,3 +46,104 @@ class SubwayResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     routes: dict[str, Route]
+
+
+class TimeRange(BaseModel):
+    """An alert's active time window in UNIX seconds."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    start: int | None = None
+    end: int | None = None
+
+
+class InformedEntity(BaseModel):
+    """A route, stop, or trip an alert applies to."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    agency_id: str | None = None
+    route_id: str | None = None
+    stop_id: str | None = None
+    trip_id: str | None = None
+
+
+class TranslatedText(BaseModel):
+    """One language variant of a translatable string."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    text: str
+    language: str | None = None
+
+
+class TranslatedString(BaseModel):
+    """A GTFS-RT TranslatedString with helpers for picking a language."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    translation: list[TranslatedText] = []
+
+    def text(self, language: str = "en") -> str | None:
+        for translation in self.translation:
+            if translation.language == language:
+                return translation.text
+        return self.translation[0].text if self.translation else None
+
+
+class MercuryAlertExtension(BaseModel):
+    """MTA's `transit_realtime.mercury_alert` extension on each alert."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    created_at: int | None = None
+    updated_at: int | None = None
+    alert_type: str | None = None
+
+
+class Alert(BaseModel):
+    """A single GTFS-RT service alert."""
+
+    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+
+    active_period: list[TimeRange] = []
+    informed_entity: list[InformedEntity] = []
+    header_text: TranslatedString | None = None
+    description_text: TranslatedString | None = None
+    mercury: MercuryAlertExtension | None = Field(
+        default=None, alias="transit_realtime.mercury_alert"
+    )
+
+    @property
+    def alert_type(self) -> str | None:
+        return self.mercury.alert_type if self.mercury else None
+
+    def affects_route(self, route_id: str) -> bool:
+        return any(entity.route_id == route_id for entity in self.informed_entity)
+
+    def is_active_at(self, timestamp: int) -> bool:
+        if not self.active_period:
+            return True
+        for period in self.active_period:
+            start = period.start if period.start is not None else 0
+            end = period.end if period.end is not None else 9_999_999_999
+            if start <= timestamp <= end:
+                return True
+        return False
+
+
+class AlertEntity(BaseModel):
+    """A wrapped alert with its feed-level id."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    id: str
+    alert: Alert
+
+
+class AlertsFeed(BaseModel):
+    """Top-level GTFS-RT alerts feed (JSON variant)."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    entity: list[AlertEntity] = []

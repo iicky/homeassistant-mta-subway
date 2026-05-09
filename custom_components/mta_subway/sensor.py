@@ -19,7 +19,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_LINE, DOMAIN, ICONS_BASE, SUBWAY_LINES
-from .coordinator import MTASubwayCoordinator
+from .coordinator import MTASubwayCoordinator, MTASubwayData
 from .models import Route
 
 if TYPE_CHECKING:
@@ -64,9 +64,9 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up MTA Subway sensors from a config entry."""
-    coordinator: MTASubwayCoordinator = hass.data[DOMAIN][entry.entry_id]
+    data: MTASubwayData = hass.data[DOMAIN][entry.entry_id]
     lines: list[str] = entry.options.get(CONF_LINE) or entry.data[CONF_LINE]
-    async_add_entities(MTASubwaySensor(coordinator, line) for line in lines)
+    async_add_entities(MTASubwaySensor(data.routes, line) for line in lines)
 
 
 class MTASubwaySensor(CoordinatorEntity[MTASubwayCoordinator], SensorEntity):
