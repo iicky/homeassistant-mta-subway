@@ -1,89 +1,83 @@
-# Home Assistant MTA Subway Service Status Sensor
+# Home Assistant MTA Subway
 
+[![Test](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/test.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/test.yml)
+[![hassfest](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hassfest.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hassfest.yml)
+[![HACS Validate](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hacs_validate.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hacs_validate.yml)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
 > **Disclaimer:** This is an unofficial, community-maintained integration. It is not affiliated with, endorsed by, or sponsored by the Metropolitan Transportation Authority (MTA). The MTA logo and subway bullet icons are used for identification purposes only.
 
-## Overview
-
-A sensor to provide MTA Subway service statuses for Home Assistant. The sensor reads from the [goodservice.io](https://goodservice.io) API and provides both the overall line status as a sensor state as well as status descriptions and route directions as sensor attributes. The train line states are updated every minute from the detailed [goodservice.io](https://www.goodservice.io/api/routes?detailed=1) route endpoint.
-
-Credit for the line icons goes to [louh](https://github.com/louh) and his great [NYC Subway Icons repo](https://github.com/louh/nyc-subway-icons) (used with some slight renaming).
-
-### Sensor States
-- Good Service
-- Planned Work
-- Slow
-- Not Good
-- Delays
-- Service Change
+A Home Assistant integration that surfaces NYC subway service status, alerts, and per-direction conditions as native entities. Pulls a curated rollup status from [subwaynow.app](https://www.subwaynow.app/) and live alerts directly from the MTA's GTFS-Realtime feed.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/images/Subway%20Group%20Screen%20Shot.png" alt="Example subway card in Home Assistant">
 </p>
 
-### Sensor Attributes
+## Features
 
-**Color**<br>
-Indicates the color of the subway line.
+- **Per-line service status** — one sensor per subway line (1, 2, 3, …, A, B, C, …, plus shuttles and express variants), state is the human-readable rollup ("Good Service", "Delays", "Service Change", "Planned Work", etc.)
+- **Per-direction sensors** — northbound and southbound sensors for each line, exposing direction-specific status as a first-class entity
+- **Per-line alert binary sensors** — three categories per line (`planned_work`, `delays`, `service_change`) sourced from the MTA's official alerts feed, with active-period filtering and full alert text in attributes
+- **Bundled subway bullet icons** — official-style line bullets served from the integration, no external dependencies
+- **Config flow** — set up entirely from the Home Assistant UI, no YAML required
+- **Options flow** — add or remove tracked lines after install without reinstalling
 
-**Scheduled**<br>
-Indicates whether the route is scheduled or not.
+## Installation
 
-**Direction statuses**<br>
-Indicates the route status for both route directions.
+### HACS (recommended)
 
-**Delay summaries**<br>
-A full description of route delays for both directions.
+1. Open HACS in Home Assistant
+2. Go to **Integrations** → **⋮ menu** → **Custom repositories**
+3. Add `https://github.com/iicky/homeassistant-mta-subway` as an **Integration**
+4. Install **MTA Subway** and restart Home Assistant
 
-**Service irregularity summaries**<br>
-A full description of any service irregularity summaries currently occuring on the line for both route directions.
+> Once this integration is accepted into HACS Default, steps 2–3 will be unnecessary — you'll be able to find it directly in HACS search.
 
-**Service change summaries**<br>
-A full description of any planned work currently for both directions individually and combined.
+### Manual
 
-<br>
+Copy the `custom_components/mta_subway` directory into your Home Assistant `config/custom_components/` directory and restart.
+
+## Configuration
+
+After installation:
+
+1. **Settings** → **Devices & Services** → **Add Integration**
+2. Search for **MTA Subway**
+3. Pick the lines you want to track from the multi-select dropdown
+4. Done — entities appear immediately
+
+To change which lines you track, open the integration in **Devices & Services** and click **Configure**.
+
+## Entities
+
+For each tracked line, the integration creates:
+
+| Entity | Type | State |
+|---|---|---|
+| `sensor.mta_subway_<line>` | Sensor | Overall service status (e.g. `Good Service`) |
+| `sensor.mta_subway_<line>_north` | Sensor | Northbound status, or unavailable if not reported |
+| `sensor.mta_subway_<line>_south` | Sensor | Southbound status |
+| `binary_sensor.mta_subway_<line>_planned_work` | Binary | On if active planned-work alert |
+| `binary_sensor.mta_subway_<line>_delays` | Binary | On if active delay alert |
+| `binary_sensor.mta_subway_<line>_service_change` | Binary | On if active service-change/reroute/suspension |
+
+Each binary sensor exposes `count`, `titles` (top alert headlines), and `alert_types` as attributes for richer automations.
+
+The line sensor also carries `color`, `scheduled`, `direction_statuses`, `delay_summaries`, `service_irregularity_summaries`, and `service_change_summaries` attributes for backwards compatibility.
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/images/Sensor%20States%20Screen%20Shot.png" alt="Example sensor state and attributes in Home Assistant">
 </p>
 
-## Installation
+## Upgrading from an older version
 
-To install the sensor, copy the `mta_subway` folder under `custom_components` to a directory called `custom_components` in your Home Assistant configuration directory.
+If you previously configured the integration via `configuration.yaml`, your config will auto-import to a config entry on first startup after upgrading. You can then remove the `platform: mta_subway` block from `configuration.yaml`. Existing entity IDs and history are preserved.
 
-To use, add the following configuration to your `configuration.yaml` file for Home Assistant, removing any lines that you do not want to monitor:
+## Data sources
 
-```
-sensor:
-  - platform: mta_subway
-    line:
-      - '1'
-      - '2'
-      - '3'
-      - '4'
-      - '5'
-      - '6'
-      - '6X'
-      - '7'
-      - '7X'
-      - 'A'
-      - 'B'
-      - 'C'
-      - 'D'
-      - 'E'
-      - 'F'
-      - 'FX'
-      - 'G'
-      - 'J'
-      - 'L'
-      - 'M'
-      - 'N'
-      - 'Q'
-      - 'R'
-      - 'GS'
-      - 'FS'
-      - 'H'
-      - 'SI'
-      - 'W'
-      - 'Z'
-```
+- **[subwaynow.app](https://www.subwaynow.app/)** — provides the curated "Good Service" / "Delays" / "Planned Work" rollup status. Polled every 60 seconds.
+- **[MTA GTFS-Realtime alerts](https://api.mta.info/)** — provides the raw alerts that drive the binary sensors. Polled every 60 seconds. No API key required.
+
+## Credits
+
+Subway line bullet icons originally from [louh's NYC Subway Icons repo](https://github.com/louh/nyc-subway-icons), with minor renaming.
