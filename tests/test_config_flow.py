@@ -22,9 +22,12 @@ async def test_user_flow_creates_entry(hass: HomeAssistant) -> None:
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
 
-    with patch(
-        "custom_components.mta_subway.async_setup_entry", return_value=True
-    ) as mock_setup_entry:
+    with (
+        patch("custom_components.mta_subway.async_setup", return_value=True),
+        patch(
+            "custom_components.mta_subway.async_setup_entry", return_value=True
+        ) as mock_setup_entry,
+    ):
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], user_input={CONF_LINE: ["1", "L"]}
         )
@@ -49,9 +52,12 @@ async def test_already_configured_aborts(hass: HomeAssistant) -> None:
 
 
 async def test_yaml_import_creates_entry(hass: HomeAssistant) -> None:
-    with patch(
-        "custom_components.mta_subway.async_setup_entry", return_value=True
-    ) as mock_setup_entry:
+    with (
+        patch("custom_components.mta_subway.async_setup", return_value=True),
+        patch(
+            "custom_components.mta_subway.async_setup_entry", return_value=True
+        ) as mock_setup_entry,
+    ):
         result = await hass.config_entries.flow.async_init(
             DOMAIN,
             context={"source": config_entries.SOURCE_IMPORT},

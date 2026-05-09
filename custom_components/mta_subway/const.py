@@ -12,9 +12,7 @@ API_URL = "https://api.subwaynow.app/routes?detailed=1"
 ALERTS_API_URL = (
     "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/camsys%2Fsubway-alerts.json"
 )
-ICONS_BASE = (
-    "https://raw.githubusercontent.com/iicky/homeassistant-mta-subway/main/icons"
-)
+ICONS_BASE = "/api/mta_subway/icons"
 
 UPDATE_INTERVAL = timedelta(seconds=60)
 ALERTS_UPDATE_INTERVAL = timedelta(seconds=60)

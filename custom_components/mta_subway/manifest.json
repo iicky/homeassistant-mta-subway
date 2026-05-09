@@ -1,6 +1,7 @@
 {
     "domain": "mta_subway",
     "name": "MTA Subway",
+    "after_dependencies": ["http"],
     "codeowners": ["@iicky"],
     "config_flow": true,
     "documentation": "https://github.com/iicky/homeassistant-mta-subway",
