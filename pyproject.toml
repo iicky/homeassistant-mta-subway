@@ -70,6 +70,7 @@ reportUnknownParameterType = "none"
 reportUnknownLambdaType = "none"
 reportMissingTypeArgument = "none"
 reportMissingTypeStubs = "none"
+reportPrivateUsage = "none"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
