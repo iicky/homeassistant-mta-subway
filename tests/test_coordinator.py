@@ -35,7 +35,8 @@ async def test_update_data_success(hass: HomeAssistant) -> None:
         await coordinator.async_refresh()
     assert coordinator.last_update_success
     assert coordinator.data is not None
-    assert coordinator.data["1"]["status"] == "Good Service"
+    assert coordinator.data["1"].status == "Good Service"
+    assert coordinator.data["1"].color == "#ee352e"
 
 
 async def test_update_data_http_error(hass: HomeAssistant) -> None:
