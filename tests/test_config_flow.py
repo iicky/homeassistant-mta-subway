@@ -40,15 +40,13 @@ async def test_user_flow_creates_entry(hass: HomeAssistant) -> None:
 
 
 async def test_already_configured_aborts(hass: HomeAssistant) -> None:
-    MockConfigEntry(
-        domain=DOMAIN, data={CONF_LINE: ["1"]}, unique_id=DOMAIN
-    ).add_to_hass(hass)
+    MockConfigEntry(domain=DOMAIN, data={CONF_LINE: ["1"]}).add_to_hass(hass)
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
     assert result["type"] == FlowResultType.ABORT
-    assert result["reason"] == "already_configured"
+    assert result["reason"] == "single_instance_allowed"
 
 
 async def test_yaml_import_creates_entry(hass: HomeAssistant) -> None:
