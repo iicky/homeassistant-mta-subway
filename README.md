@@ -1,9 +1,8 @@
 # Home Assistant MTA Subway
 
-[![Test](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/test.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/test.yml)
-[![hassfest](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hassfest.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hassfest.yml)
-[![HACS Validate](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hacs_validate.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/hacs_validate.yml)
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![CI](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/test.yml/badge.svg)](https://github.com/iicky/homeassistant-mta-subway/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/iicky/homeassistant-mta-subway/graph/badge.svg)](https://codecov.io/gh/iicky/homeassistant-mta-subway)
+[![HACS](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 
 > **Disclaimer:** This is an unofficial, community-maintained integration. It is not affiliated with, endorsed by, or sponsored by the Metropolitan Transportation Authority (MTA). The MTA logo and subway bullet icons are used for identification purposes only.
 
