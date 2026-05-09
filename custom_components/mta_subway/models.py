@@ -8,7 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class DirectionalStatus(BaseModel):
     """Per-direction string values keyed by north / south."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     north: str | None = None
     south: str | None = None
@@ -17,7 +17,7 @@ class DirectionalStatus(BaseModel):
 class ServiceChangeSummary(BaseModel):
     """Service-change summary lists keyed by direction or `both`."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     both: list[str] = Field(default_factory=list)
     north: list[str] = Field(default_factory=list)
@@ -27,7 +27,7 @@ class ServiceChangeSummary(BaseModel):
 class Route(BaseModel):
     """Service status for a single subway line."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     id: str
     name: str
@@ -43,7 +43,7 @@ class Route(BaseModel):
 class SubwayResponse(BaseModel):
     """Top-level response from subwaynow.app /routes?detailed=1."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     routes: dict[str, Route]
 
@@ -51,7 +51,7 @@ class SubwayResponse(BaseModel):
 class TimeRange(BaseModel):
     """An alert's active time window in UNIX seconds."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     start: int | None = None
     end: int | None = None
@@ -60,7 +60,7 @@ class TimeRange(BaseModel):
 class InformedEntity(BaseModel):
     """A route, stop, or trip an alert applies to."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     agency_id: str | None = None
     route_id: str | None = None
@@ -71,7 +71,7 @@ class InformedEntity(BaseModel):
 class TranslatedText(BaseModel):
     """One language variant of a translatable string."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     text: str
     language: str | None = None
@@ -80,7 +80,7 @@ class TranslatedText(BaseModel):
 class TranslatedString(BaseModel):
     """A GTFS-RT TranslatedString with helpers for picking a language."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     translation: list[TranslatedText] = []
 
@@ -94,7 +94,7 @@ class TranslatedString(BaseModel):
 class MercuryAlertExtension(BaseModel):
     """MTA's `transit_realtime.mercury_alert` extension on each alert."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     created_at: int | None = None
     updated_at: int | None = None
@@ -104,7 +104,7 @@ class MercuryAlertExtension(BaseModel):
 class Alert(BaseModel):
     """A single GTFS-RT service alert."""
 
-    model_config = ConfigDict(extra="ignore", populate_by_name=True)
+    model_config = ConfigDict(extra="ignore", populate_by_name=True, frozen=True)
 
     active_period: list[TimeRange] = []
     informed_entity: list[InformedEntity] = []
@@ -135,7 +135,7 @@ class Alert(BaseModel):
 class AlertEntity(BaseModel):
     """A wrapped alert with its feed-level id."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     id: str
     alert: Alert
@@ -144,6 +144,6 @@ class AlertEntity(BaseModel):
 class AlertsFeed(BaseModel):
     """Top-level GTFS-RT alerts feed (JSON variant)."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", frozen=True)
 
     entity: list[AlertEntity] = []

@@ -21,13 +21,17 @@ from .const import (
     CONF_LINE,
     DOMAIN,
 )
-from .coordinator import MTAAlertsCoordinator, MTASubwayData
+from .coordinator import MTAAlertsCoordinator
 from .models import AlertEntity
 
 if TYPE_CHECKING:
-    from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from . import MTASubwayConfigEntry
+
+
+PARALLEL_UPDATES = 0
 
 
 PLANNED_WORK_TYPES = frozenset({"Planned Work"})
@@ -59,11 +63,11 @@ def _classify(alert_type: str | None) -> str:
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
+    entry: MTASubwayConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up alert binary sensors from a config entry."""
-    data: MTASubwayData = hass.data[DOMAIN][entry.entry_id]
+    data = entry.runtime_data
     lines: list[str] = entry.options.get(CONF_LINE) or entry.data[CONF_LINE]
     async_add_entities(
         MTAAlertBinarySensor(data.alerts, line, category)
