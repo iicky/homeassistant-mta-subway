@@ -71,6 +71,18 @@ async def test_alerts_http_error(hass: HomeAssistant) -> None:
     assert isinstance(coordinator.last_exception, UpdateFailed)
 
 
+async def test_alerts_unchanged_returns_same_instance(hass: HomeAssistant) -> None:
+    """Equal payloads short-circuit so coordinator.data identity is preserved."""
+    coordinator = MTAAlertsCoordinator(hass)
+    with aioresponses() as mocked:
+        mocked.get(ALERTS_API_URL, payload=SAMPLE_ALERTS_PAYLOAD, repeat=True)
+        await coordinator.async_refresh()
+        first = coordinator.data
+        await coordinator.async_refresh()
+
+    assert coordinator.data is first
+
+
 async def test_alerts_empty_feed(hass: HomeAssistant) -> None:
     coordinator = MTAAlertsCoordinator(hass)
     with aioresponses() as mocked:
