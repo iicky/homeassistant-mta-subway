@@ -1,0 +1,27 @@
+name: Label PRs by Conventional Commit
+
+on:
+  pull_request_target:
+    types: [opened, edited, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply label based on PR title prefix
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          REPO: ${{ github.repository }}
+        run: |
+          if printf '%s' "$TITLE" | grep -Eq '^[a-z]+!:'; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "breaking-change"
+          elif printf '%s' "$TITLE" | grep -Eq '^feat:'; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "enhancement"
+          elif printf '%s' "$TITLE" | grep -Eq '^fix:'; then
+            gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "bug"
+          fi
