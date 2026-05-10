@@ -73,6 +73,25 @@ async def test_setup_entry_loads_and_unloads(hass: HomeAssistant) -> None:
     assert entry.state is ConfigEntryState.NOT_LOADED
 
 
+async def test_setup_fails_when_routes_feed_unreachable(hass: HomeAssistant) -> None:
+    """Setup raises ConfigEntryNotReady when the routes feed errors on first refresh."""
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={CONF_LINE: ["1"]},
+        unique_id=DOMAIN,
+    )
+    entry.add_to_hass(hass)
+    assert await async_setup_component(hass, "http", {})
+
+    with aioresponses() as mocked:
+        mocked.get(API_URL, status=500, repeat=True)
+        mocked.get(ALERTS_API_URL, payload=ALERTS_PAYLOAD, repeat=True)
+        assert not await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+
+    assert entry.state is ConfigEntryState.SETUP_RETRY
+
+
 async def test_options_change_reloads_entry(hass: HomeAssistant) -> None:
     """Updating options triggers entry reload via update listener."""
     entry = MockConfigEntry(

@@ -52,6 +52,8 @@ class MTASubwayCoordinator(DataUpdateCoordinator[dict[str, Route]]):
 
         if not parsed.routes:
             raise UpdateFailed("Response contained no routes")
+        if parsed.routes == self.data:
+            return self.data
         return parsed.routes
 
 
@@ -82,6 +84,8 @@ class MTAAlertsCoordinator(DataUpdateCoordinator[list[AlertEntity]]):
         except ValidationError as err:
             raise UpdateFailed(f"Invalid alerts response: {err}") from err
 
+        if parsed.entity == self.data:
+            return self.data
         return parsed.entity
 
 

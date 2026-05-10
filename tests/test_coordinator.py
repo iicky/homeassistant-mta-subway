@@ -48,6 +48,18 @@ async def test_update_data_http_error(hass: HomeAssistant) -> None:
     assert isinstance(coordinator.last_exception, UpdateFailed)
 
 
+async def test_update_data_unchanged_returns_same_instance(hass: HomeAssistant) -> None:
+    """Equal payloads short-circuit so coordinator.data identity is preserved."""
+    coordinator = MTASubwayCoordinator(hass)
+    with aioresponses() as mocked:
+        mocked.get(API_URL, payload=SAMPLE_PAYLOAD, repeat=True)  # pyright: ignore[reportUnknownMemberType]
+        await coordinator.async_refresh()
+        first = coordinator.data
+        await coordinator.async_refresh()
+
+    assert coordinator.data is first
+
+
 async def test_update_data_missing_routes(hass: HomeAssistant) -> None:
     coordinator = MTASubwayCoordinator(hass)
     with aioresponses() as mocked:
