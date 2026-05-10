@@ -1,6 +1,6 @@
 [project]
 name = "homeassistant-mta-subway"
-version = "0.3.0"
+version = "0.4.0"
 description = "Home Assistant integration for NYC MTA Subway service status"
 readme = "README.md"
 license = { text = "MIT" }
