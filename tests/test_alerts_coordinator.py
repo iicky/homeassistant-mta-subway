@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aioresponses import aioresponses
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.mta_subway.const import ALERTS_API_URL
@@ -12,6 +11,9 @@ from custom_components.mta_subway.coordinator import MTAAlertsCoordinator
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
+    from pytest_homeassistant_custom_component.test_util.aiohttp import (
+        AiohttpClientMocker,
+    )
 
 
 SAMPLE_ALERTS_PAYLOAD: dict[str, object] = {
@@ -45,11 +47,12 @@ SAMPLE_ALERTS_PAYLOAD: dict[str, object] = {
 }
 
 
-async def test_alerts_update_success(hass: HomeAssistant) -> None:
+async def test_alerts_update_success(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    aioclient_mock.get(ALERTS_API_URL, json=SAMPLE_ALERTS_PAYLOAD)
     coordinator = MTAAlertsCoordinator(hass)
-    with aioresponses() as mocked:
-        mocked.get(ALERTS_API_URL, payload=SAMPLE_ALERTS_PAYLOAD)
-        await coordinator.async_refresh()
+    await coordinator.async_refresh()
 
     assert coordinator.last_update_success
     assert coordinator.data is not None
@@ -61,33 +64,36 @@ async def test_alerts_update_success(hass: HomeAssistant) -> None:
     assert not first.alert.affects_route("L")
 
 
-async def test_alerts_http_error(hass: HomeAssistant) -> None:
+async def test_alerts_http_error(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    aioclient_mock.get(ALERTS_API_URL, status=500)
     coordinator = MTAAlertsCoordinator(hass)
-    with aioresponses() as mocked:
-        mocked.get(ALERTS_API_URL, status=500)
-        await coordinator.async_refresh()
+    await coordinator.async_refresh()
 
     assert not coordinator.last_update_success
     assert isinstance(coordinator.last_exception, UpdateFailed)
 
 
-async def test_alerts_unchanged_returns_same_instance(hass: HomeAssistant) -> None:
+async def test_alerts_unchanged_returns_same_instance(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     """Equal payloads short-circuit so coordinator.data identity is preserved."""
+    aioclient_mock.get(ALERTS_API_URL, json=SAMPLE_ALERTS_PAYLOAD)
     coordinator = MTAAlertsCoordinator(hass)
-    with aioresponses() as mocked:
-        mocked.get(ALERTS_API_URL, payload=SAMPLE_ALERTS_PAYLOAD, repeat=True)
-        await coordinator.async_refresh()
-        first = coordinator.data
-        await coordinator.async_refresh()
+    await coordinator.async_refresh()
+    first = coordinator.data
+    await coordinator.async_refresh()
 
     assert coordinator.data is first
 
 
-async def test_alerts_empty_feed(hass: HomeAssistant) -> None:
+async def test_alerts_empty_feed(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
+    aioclient_mock.get(ALERTS_API_URL, json={"header": {}, "entity": []})
     coordinator = MTAAlertsCoordinator(hass)
-    with aioresponses() as mocked:
-        mocked.get(ALERTS_API_URL, payload={"header": {}, "entity": []})
-        await coordinator.async_refresh()
+    await coordinator.async_refresh()
 
     assert coordinator.last_update_success
     assert coordinator.data == []

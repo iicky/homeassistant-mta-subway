@@ -27,4 +27,3 @@ updates:
           - "pyright"
           - "pytest*"
           - "pre-commit"
-          - "aioresponses"

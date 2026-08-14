@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from custom_components.mta_subway.models import (
     Alert,
     AlertEntity,
@@ -65,12 +68,8 @@ def test_route_is_frozen() -> None:
             "scheduled": True,
         }
     )
-    try:
+    with pytest.raises(ValidationError):
         route.status = "Mutated"  # type: ignore[misc]
-    except (TypeError, ValueError):
-        return
-    msg = "Route should be frozen"
-    raise AssertionError(msg)
 
 
 def test_alert_entity_round_trips() -> None:
