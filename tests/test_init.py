@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aioresponses import aioresponses
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -18,6 +17,9 @@ from custom_components.mta_subway.const import (
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
+    from pytest_homeassistant_custom_component.test_util.aiohttp import (
+        AiohttpClientMocker,
+    )
 
 
 ROUTES_PAYLOAD: dict[str, object] = {
@@ -36,7 +38,9 @@ ROUTES_PAYLOAD: dict[str, object] = {
 ALERTS_PAYLOAD: dict[str, object] = {"header": {}, "entity": []}
 
 
-async def test_setup_entry_loads_and_unloads(hass: HomeAssistant) -> None:
+async def test_setup_entry_loads_and_unloads(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     """Full setup-and-unload cycle uses runtime_data and creates entities."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -46,11 +50,10 @@ async def test_setup_entry_loads_and_unloads(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
     assert await async_setup_component(hass, "http", {})
 
-    with aioresponses() as mocked:
-        mocked.get(API_URL, payload=ROUTES_PAYLOAD, repeat=True)
-        mocked.get(ALERTS_API_URL, payload=ALERTS_PAYLOAD, repeat=True)
-        assert await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
+    aioclient_mock.get(API_URL, json=ROUTES_PAYLOAD)
+    aioclient_mock.get(ALERTS_API_URL, json=ALERTS_PAYLOAD)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.LOADED
     assert entry.runtime_data is not None
@@ -73,7 +76,9 @@ async def test_setup_entry_loads_and_unloads(hass: HomeAssistant) -> None:
     assert entry.state is ConfigEntryState.NOT_LOADED
 
 
-async def test_setup_fails_when_routes_feed_unreachable(hass: HomeAssistant) -> None:
+async def test_setup_fails_when_routes_feed_unreachable(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     """Setup raises ConfigEntryNotReady when the routes feed errors on first refresh."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -83,16 +88,17 @@ async def test_setup_fails_when_routes_feed_unreachable(hass: HomeAssistant) -> 
     entry.add_to_hass(hass)
     assert await async_setup_component(hass, "http", {})
 
-    with aioresponses() as mocked:
-        mocked.get(API_URL, status=500, repeat=True)
-        mocked.get(ALERTS_API_URL, payload=ALERTS_PAYLOAD, repeat=True)
-        assert not await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
+    aioclient_mock.get(API_URL, status=500)
+    aioclient_mock.get(ALERTS_API_URL, json=ALERTS_PAYLOAD)
+    assert not await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.SETUP_RETRY
 
 
-async def test_options_change_reloads_entry(hass: HomeAssistant) -> None:
+async def test_options_change_reloads_entry(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     """Updating options triggers entry reload via update listener."""
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -102,14 +108,13 @@ async def test_options_change_reloads_entry(hass: HomeAssistant) -> None:
     entry.add_to_hass(hass)
     assert await async_setup_component(hass, "http", {})
 
-    with aioresponses() as mocked:
-        mocked.get(API_URL, payload=ROUTES_PAYLOAD, repeat=True)
-        mocked.get(ALERTS_API_URL, payload=ALERTS_PAYLOAD, repeat=True)
-        assert await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
+    aioclient_mock.get(API_URL, json=ROUTES_PAYLOAD)
+    aioclient_mock.get(ALERTS_API_URL, json=ALERTS_PAYLOAD)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
 
-        hass.config_entries.async_update_entry(entry, options={CONF_LINE: ["1", "2"]})
-        await hass.async_block_till_done()
+    hass.config_entries.async_update_entry(entry, options={CONF_LINE: ["1", "2"]})
+    await hass.async_block_till_done()
 
     assert entry.state is ConfigEntryState.LOADED
     assert hass.states.get("sensor.mta_subway_2") is not None

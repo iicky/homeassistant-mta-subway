@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from aioresponses import aioresponses
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -20,6 +19,9 @@ from custom_components.mta_subway.diagnostics import (
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
+    from pytest_homeassistant_custom_component.test_util.aiohttp import (
+        AiohttpClientMocker,
+    )
 
 
 ROUTES_PAYLOAD: dict[str, object] = {
@@ -59,20 +61,21 @@ ALERTS_PAYLOAD: dict[str, object] = {
 }
 
 
-async def test_diagnostics_dump(hass: HomeAssistant) -> None:
+async def test_diagnostics_dump(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker
+) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN, data={CONF_LINE: ["1", "L"]}, unique_id=DOMAIN
     )
     entry.add_to_hass(hass)
     assert await async_setup_component(hass, "http", {})
 
-    with aioresponses() as mocked:
-        mocked.get(API_URL, payload=ROUTES_PAYLOAD, repeat=True)
-        mocked.get(ALERTS_API_URL, payload=ALERTS_PAYLOAD, repeat=True)
-        assert await hass.config_entries.async_setup(entry.entry_id)
-        await hass.async_block_till_done()
+    aioclient_mock.get(API_URL, json=ROUTES_PAYLOAD)
+    aioclient_mock.get(ALERTS_API_URL, json=ALERTS_PAYLOAD)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
 
-        diag = await async_get_config_entry_diagnostics(hass, entry)
+    diag = await async_get_config_entry_diagnostics(hass, entry)
 
     assert diag["config_entry"]["data"] == {CONF_LINE: ["1", "L"]}
     assert diag["routes"]["last_update_success"] is True

@@ -5,7 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from homeassistant.components.http import StaticPathConfig
+# Imported from the package root, not homeassistant.components.http.server, so the
+# integration keeps working on HA versions predating the http package split. The
+# package root re-exports this symbol but omits it from __all__, hence the ignore.
+from homeassistant.components.http import (
+    StaticPathConfig,  # pyright: ignore[reportPrivateImportUsage]
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 

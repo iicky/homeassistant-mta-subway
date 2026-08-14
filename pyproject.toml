@@ -1,10 +1,10 @@
 [project]
 name = "homeassistant-mta-subway"
-version = "0.4.0"
+version = "0.4.1"
 description = "Home Assistant integration for NYC MTA Subway service status"
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.13.2"
+requires-python = ">=3.14.2"
 authors = [{ name = "iicky" }]
 
 dependencies = [
@@ -13,12 +13,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "homeassistant>=2025.5",
+    "homeassistant>=2026.3",
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "pytest-cov>=5.0",
     "pytest-homeassistant-custom-component>=0.13",
-    "aioresponses>=0.7",
     "ruff>=0.7",
     "pyright>=1.1.380",
     "pre-commit>=3.7",
@@ -26,7 +25,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-target-version = "py313"
+target-version = "py314"
 extend-exclude = [".venv", "tests/__pycache__"]
 
 [tool.ruff.lint]
@@ -56,7 +55,7 @@ quote-style = "double"
 include = ["custom_components/mta_subway", "tests"]
 exclude = ["**/__pycache__", ".venv"]
 extraPaths = ["."]
-pythonVersion = "3.13"
+pythonVersion = "3.14"
 typeCheckingMode = "strict"
 venvPath = "."
 venv = ".venv"
